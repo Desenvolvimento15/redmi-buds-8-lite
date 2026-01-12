@@ -1,74 +1,82 @@
-$(".slick-track").slick({
-  lazyLoad: "ondemand",
-  arrows: false,
-  dots: false,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  autoplay: true,
-  autoplaySpeed: 3000,
-});
+document.addEventListener("DOMContentLoaded", function () {
+  const slides = document.querySelectorAll(".slick-slide");
+  const dots = document.querySelectorAll(".icon_box .flex-item");
+  const texts = document.querySelectorAll(".text_box .earphone_text");
 
+  let currentIndex = 0;
+  let autoplayTimer = null;
+  const AUTOPLAY_DELAY = 5000; // 5 segundos
 
+  function updateSlider(index) {
+    slides.forEach((slide, i) => {
+      if (i === index) {
+        slide.setAttribute("aria-hidden", "false");
+        slide.style.display = "block";
+      } else {
+        slide.setAttribute("aria-hidden", "true");
+        slide.style.display = "none";
+      }
+    });
 
-document.addEventListener("DOMContentLoaded", () => {
-  // --- ESCONDER TODOS OS MODAIS NA CARGA ---
-  document.querySelectorAll(".modal1, .modal2").forEach((modal) => {
-    modal.style.display = "none";
-  });
-  document.querySelectorAll("[class*='_ye']").forEach((modal) => {
-    modal.classList.add("no_show"); // modais tipo embrace_slider
-  });
+    dots.forEach((dot, i) => {
+      if (i === index) {
+        dot.classList.add("text_active");
+        dot.setAttribute("aria-selected", "true");
+        dot.setAttribute("tabindex", "0");
+      } else {
+        dot.classList.remove("text_active");
+        dot.setAttribute("aria-selected", "false");
+        dot.setAttribute("tabindex", "-1");
+      }
+    });
 
-  // --- LISTENER ÚNICO PARA TODOS OS CLIQUES ---
-  document.addEventListener("click", (e) => {
-    const target = e.target;
+    texts.forEach((text, i) => {
+      if (i === index) {
+        text.classList.add("text_active");
+      } else {
+        text.classList.remove("text_active");
+      }
+    });
 
-    // --- ABRIR modal embrace_slider ---
-    if (target.matches(".embrace_slider img[role='button']")) {
-      const slide = target.closest(".slick-slide");
-      const modal = slide.querySelector("[class*='_ye']");
-      if (modal) modal.classList.remove("no_show");
+    currentIndex = index;
+  }
+
+  function nextSlide() {
+    const nextIndex = (currentIndex + 1) % slides.length;
+    updateSlider(nextIndex);
+  }
+
+  function startAutoplay() {
+    stopAutoplay();
+    autoplayTimer = setInterval(nextSlide, AUTOPLAY_DELAY);
+  }
+
+  function stopAutoplay() {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
     }
+  }
 
-    // --- FECHAR modal embrace_slider ---
-    if (target.matches("[class*='_ye'] img[role='button']")) {
-      const modal = target.closest("[class*='_ye']");
-      if (modal) modal.classList.add("no_show");
-    }
+  // Clique / interação nos dots
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      stopAutoplay();
+      updateSlider(index);
+      startAutoplay();
+    });
 
-    // --- ABRIR modal1 ---
-    if (target.closest(".div367[role='button']")) {
-      const trigger = target.closest(".div367[role='button']");
-      const modal = trigger.querySelector(".modal1");
-      if (modal) modal.style.display = "flex";
-    }
-
-    // --- FECHAR modal1 ---
-    if (target.matches(".modal1 .up1_close_pc img[role='button']")) {
-      const modal = target.closest(".modal1");
-      if (modal) modal.style.display = "none";
-    }
-
-    // --- ABRIR modal2 ---
-    if (target.closest(".div7878_wrap[role='button']")) {
-      const trigger = target.closest(".div7878_wrap[role='button']");
-      const modal = document.querySelector(".modal2"); // assume apenas 1 modal2
-      if (modal) modal.style.display = "flex";
-    }
-
-    // --- FECHAR modal2 ---
-    if (target.matches(".modal2 .up2_close_pc img[role='button']")) {
-      const modal = target.closest(".modal2");
-      if (modal) modal.style.display = "none";
-    }
-  });
-
-  // --- FECHAR modal1 e modal2 AO CLICAR FORA DO CONTEÚDO ---
-  window.addEventListener("click", (e) => {
-    document.querySelectorAll(".modal1, .modal2").forEach((modal) => {
-      if (e.target === modal) {
-        modal.style.display = "none";
+    dot.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        stopAutoplay();
+        updateSlider(index);
+        startAutoplay();
       }
     });
   });
+
+  // Inicialização
+  updateSlider(0);
+  startAutoplay();
 });
